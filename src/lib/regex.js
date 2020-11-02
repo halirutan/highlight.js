@@ -8,7 +8,7 @@ export function escape(value) {
 
 /**
  * @param {RegExp | string } re
- * @returns {string}
+ * @returns {string|null}
  */
 export function source(re) {
   if (!re) return null;
@@ -38,20 +38,18 @@ export function optional(re) {
  * @returns {string}
  */
 export function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
+  return args.map((x) => source(x)).join("");
 }
 
 /**
- * Any of the passed expresssions may match
+ * Any of the passed expressions may match
  *
  * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
+ * @param {...(RegExp | string) } args
  * @returns {string}
  */
 export function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
-  return joined;
+  return '(' + args.map((x) => source(x)).join("|") + ")";
 }
 
 /**
@@ -68,12 +66,12 @@ export function countMatchGroups(re) {
  * @param {string} lexeme
  */
 export function startsWith(re, lexeme) {
-  var match = re && re.exec(lexeme);
+  const match = re && re.exec(lexeme);
   return match && match.index === 0;
 }
 
 // join logically computes regexps.join(separator), but fixes the
-// backreferences so they continue to match.
+// back-references so they continue to match.
 // it also places each individual regular expression into it's own
 // match group, keeping track of the sequencing of those match groups
 // is currently an exercise for the caller. :-)
@@ -90,19 +88,19 @@ export function join(regexps, separator = "|") {
   //   interesting elements
   // - non-matching or lookahead parentheses, which do not capture. These
   //   follow the '(' with a '?'.
-  var backreferenceRe = /\[(?:[^\\\]]|\\.)*\]|\(\??|\\([1-9][0-9]*)|\\./;
-  var numCaptures = 0;
-  var ret = '';
-  for (var i = 0; i < regexps.length; i++) {
+  const backreferenceRe = /\[(?:[^\\\]]|\\.)*]|\(\??|\\([1-9][0-9]*)|\\./;
+  let numCaptures = 0;
+  let ret = '';
+  for (let i = 0; i < regexps.length; i++) {
     numCaptures += 1;
-    var offset = numCaptures;
-    var re = source(regexps[i]);
+    const offset = numCaptures;
+    let re = source(regexps[i]);
     if (i > 0) {
       ret += separator;
     }
     ret += "(";
     while (re.length > 0) {
-      var match = backreferenceRe.exec(re);
+      const match = backreferenceRe.exec(re);
       if (match == null) {
         ret += re;
         break;
